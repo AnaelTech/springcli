@@ -31,7 +31,9 @@ et des modèles personnalisés.`,
  ███████ ██████  ██████  ██ ██ ██  ██ ██   ███     ██     ██      ██ 
       ██ ██      ██   ██ ██ ██  ██ ██ ██    ██     ██     ██      ██ 
  ███████ ██      ██   ██ ██ ██   ████  ██████      ██████ ███████ ██ `)
-    fmt.Println("Bienvenue dans SpringCLI 🚀.\n")
+    fmt.Println("\n")
+		fmt.Println("Bienvenue dans SpringCLI 🚀.\n")
+		fmt.Println(cmd.Long,"\n")
     fmt.Printf("Utilisez %s--help%s pour voir les commandes disponibles.\n", ColorYellow, ColorReset)
 	},
 }

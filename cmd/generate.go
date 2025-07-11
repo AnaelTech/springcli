@@ -63,8 +63,10 @@ var generateCmd = &cobra.Command{
 
 var generateControllerCmd = &cobra.Command{
 	Use:   "controller [controller-name]",
-	Short: "Generate code from templates controller",
-	Long:  `Generate code from templates controller spring boot`,
+	Short: "Génère le code source d’un contrôleur à partir de modèles personnalisés.",
+	Long:  `Cette commande permet de générer automatiquement le code d’un contrôleur Spring Boot
+en utilisant des templates adaptés. Elle facilite la création rapide de contrôleurs
+structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("❌ Error: controller name is required")
@@ -138,8 +140,10 @@ func generateController(controllerName string) {
 
 var generateServiceCmd = &cobra.Command{
 	Use:   "service [service-name]",
-	Short: "Generate code from templates",
-	Long:  `Generate code from templates service`,
+	Short: "Génère le code source d’un service à partir de modèles personnalisés.",
+	Long:  `Cette commande permet de générer automatiquement le code d’un service Spring Boot
+en utilisant des templates adaptés. Elle facilite la création rapide de services
+structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("❌ Error: service name is required")
@@ -204,8 +208,10 @@ func generateService(serviceName string) {
 
 var generateRepositoryCmd = &cobra.Command{
 	Use:   "repository [repository-name]",
-	Short: "Generate code from templates",
-	Long:  `Generate code from templates repository`,
+	Short: "Génère le code source d’une interface de dépôt à partir de modèles personnalisés.",
+	Long:  `Cette commande permet de générer automatiquement le code d’une interface de dépôt Spring Boot
+en utilisant des templates adaptés. Elle facilite la création rapide d’interfaces de dépôt
+structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("❌ Error: repository name is required")
@@ -271,8 +277,9 @@ func generateRepository(repositoryName string) {
 
 var generateEntityCmd = &cobra.Command{
 	Use:   "entity [entity-name] [fields...]",
-	Short: "Generate code from templates",
-	Long:  `Generate code from templates entity`,
+	Short: "Génère le code source d’une entité à partir de modèles personnalisés.",
+	Long:  `Génère le code source d’une entité Spring Boot en utilisant des templates adaptés.
+Elle facilite la création rapide d’entités structurées et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("❌ Error: entity name is required")
