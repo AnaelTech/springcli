@@ -6,10 +6,11 @@ import (
 	"strings"
 	"github.com/spf13/cobra"
 	"text/template"
-	"path/filepath"
+	//"path/filepath"
 	"bytes"
 	"springcli/internal/utils"
 	"regexp"
+	"encoding/xml"
 	)
 
 // ===================== TEMPLATE ============================== 
@@ -33,7 +34,13 @@ type Relation struct {
 	Target string
 }
 
-
+type Project struct {
+	XMLName xml.Name `xml:"project"`
+	GroupId string   `xml:"groupId"`
+	Parent  struct {
+		GroupId string `xml:"groupId"`
+	} `xml:"parent"`
+}
 // ===================== INIT ==================================
 
 func init() {
@@ -91,7 +98,7 @@ func generateController(controllerName string) {
 		"serviceName": controllerName + "Service",
 		"repositoryName": controllerName + "Repository",
 		"entityName": controllerName + "Entity",
-		"packageName": getPackageName(),
+		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("controller").Parse(controllerTemplate)
 	if err != nil {
@@ -103,7 +110,7 @@ func generateController(controllerName string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	path := getPackageName() + "/controller"
+	path := getJavaSourcePath() + "/controller"
 	filename := controllerName + "Controller.java"
 	fullPath := path + "/" + filename
 
@@ -158,7 +165,7 @@ func generateService(serviceName string) {
 		"serviceName": serviceName,
 		"repositoryName": serviceName + "Repository",
 		"entityName": serviceName + "Entity",
-		"packageName": getPackageName(),
+		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("service").Parse(serviceTemplate)
 	if err != nil {
@@ -170,7 +177,7 @@ func generateService(serviceName string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	path := getPackageName() + "/service"
+	path := getJavaSourcePath() + "/service"
 	filename := serviceName + "Service.java"
 	fullPath := path + "/" + filename
 
@@ -224,7 +231,7 @@ func generateRepository(repositoryName string) {
 	params := map[string]string{
 		"repositoryName": repositoryName,
 		"entityName": repositoryName + "Entity",
-		"packageName": getPackageName(),
+		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("repository").Parse(repositoryTemplate)
 	if err != nil {
@@ -236,7 +243,7 @@ func generateRepository(repositoryName string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	path := getPackageName() + "/repository"
+	path := getJavaSourcePath() + "/repository"
 	filename := repositoryName + "Repository.java"
 	fullPath := path + "/" + filename
 
@@ -274,7 +281,7 @@ var generateEntityCmd = &cobra.Command{
 		entityName := args[0]
 		var fields []Field
 		var relations []Relation
-		path := getPackageName() + "/entity"
+		path := getJavaSourcePath() + "/entity"
 		filename := entityName + ".java"
 		fullPath := path + "/" + filename
 		
@@ -329,7 +336,7 @@ func generateEntity(entityName string, fields []Field, relations []Relation) {
 		"tableName": strings.ToLower(entityName),
 		"fields": fields,
 		"relations": relations,
-		"packageName": getPackageName(),
+		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("entity").Parse(entityTemplate)
 	if err != nil {
@@ -341,7 +348,7 @@ func generateEntity(entityName string, fields []Field, relations []Relation) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	path := getPackageName() + "/entity"
+	path := getJavaSourcePath() + "/entity"
 	filename := entityName + ".java"
 	fullPath := path + "/" + filename
 
@@ -364,7 +371,7 @@ func generateEntity(entityName string, fields []Field, relations []Relation) {
 }
 
 func updateEntity(entityName string, fields []Field, relations []Relation) {
-	path := getPackageName() + "/entity"
+	path := getJavaSourcePath() + "/entity"
 	filename := entityName + ".java"
 	fullPath := path + "/" + filename
 
@@ -387,7 +394,7 @@ func updateEntity(entityName string, fields []Field, relations []Relation) {
 		"tableName":   strings.ToLower(entityName),
 		"fields":      mergedFields,
 		"relations":   mergedRelations,
-		"packageName": getPackageName(),
+		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("entity").Parse(entityTemplate)
 	if err != nil {
@@ -656,14 +663,67 @@ func generateFieldsTemplate(fields []Field) string {
 	return buffer.String()
 }
 
-func getPackageName() string {
-	wd, err := os.Getwd()
+func getJavaSourcePath() string {
+	base := "src/main/java/" + getPackageName()
+
+	entries, err := os.ReadDir(base)
 	if err != nil {
-		fmt.Println(err)
+		// fallback to base groupId path
+		return base
+	}
+
+	// Check if there's exactly one subfolder (typical in Spring apps)
+	for _, entry := range entries {
+		if entry.IsDir() {
+			return base + "/" + entry.Name()
+		}
+	}
+	return base
+}
+
+
+
+ func getPackageName() string {
+	pomPath := "./pom.xml"
+	strict := true // Si strict est vrai, on ne prend pas le groupId du parent
+	data, err := os.ReadFile(pomPath)
+	if err != nil {
+		fmt.Printf("❌ Failed to read %s: %v\n", pomPath, err)
 		os.Exit(1)
 	}
-	return strings.Replace(filepath.Base(wd), "cmd", "", 1)
+
+	var project Project
+	if err := xml.Unmarshal(data, &project); err != nil {
+		fmt.Printf("❌ Failed to parse %s: %v\n", pomPath, err)
+		os.Exit(1)
+	}
+
+	// Priorité au groupId défini dans <project>
+	if project.GroupId != "" {
+		return strings.ReplaceAll(project.GroupId, ".", "/")
+	}
+
+	// Fallback : utiliser <parent><groupId> si strict mode désactivé
+	if !strict && project.Parent.GroupId != "" {
+		fmt.Printf("⚠️  groupId not found in <project>. Using parent groupId: %s\n", project.Parent.GroupId)
+		return strings.ReplaceAll(project.Parent.GroupId, ".", "/")
+	}
+
+	// Sinon erreur
+	fmt.Println("❌ groupId not found in pom.xml (<project> or <parent>)")
+	os.Exit(1)
+	return ""
 }
+
+
+//func getPackageName() string {
+//	wd, err := os.Getwd()
+//	if err != nil {
+//		fmt.Println(err)
+//		os.Exit(1)
+//	}
+//	return strings.Replace(filepath.Base(wd), "cmd", "", 1)
+//}
 
 func generateFile(Path string, filename string, content []byte) {
 	err := os.WriteFile(Path+"/"+filename, content, 0644)
