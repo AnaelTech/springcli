@@ -9,13 +9,37 @@ Cli en go pour du Spring et API Rest
 ## Installation
 
 ```bash
-# Instructions d'installation
+# Clone le dépôt
+git clone https://github.com/votre-utilisateur/springcli.git
+cd springcli
+
+# Compile le binaire
+go build -o springcli ./cmd
+
+# Donner les permissions d'exécution
+chmod +x springcli
+
+# (Optionnel) Ajoute le binaire à ton PATH
+sudo mv springcli /usr/local/bin/
 ```
 
 ## Utilisation
 
 ```bash
-# Exemples d'utilisation
+# Créer un nouveau projet Spring Boot
+springcli new monprojet
+
+# Générer une entité
+springcli generate entity User name:string age:int
+
+# Générer un service
+springcli generate service User
+
+# Générer un contrôleur
+springcli generate controller User
+
+# Voir toutes les commandes disponibles
+springcli --help
 ```
 
 ## Contribution
@@ -34,4 +58,4 @@ Ce projet est sous licence [MIT](LICENSE).
 
 ---
 
->Généré avec le script GitHub Repository Creator
+> Généré avec le script GitHub Repository Creator
