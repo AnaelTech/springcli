@@ -10,8 +10,10 @@ import (
 	"strings"
 )
 
-// DownloadSpringProject télécharge et extrait un projet Spring Initializr directement dans dest.
 func DownloadSpringProject(params map[string]string, dest string) error {
+	if _, ok := params["bootVersion"]; !ok {
+		params["bootVersion"] = "3.4.0"
+	}
 	baseURL := "https://start.spring.io/starter.zip"
 	req, err := http.NewRequest("GET", baseURL, nil)
 	if err != nil {
@@ -27,6 +29,10 @@ func DownloadSpringProject(params map[string]string, dest string) error {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to download zip: status %d, body: %s", resp.StatusCode, string(body))
 	}
 	defer resp.Body.Close()
 

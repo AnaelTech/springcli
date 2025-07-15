@@ -16,10 +16,8 @@ func init() {
 	newCmd.Flags().StringP("group-id", "g", "com.example", "Group ID for the project")
 	newCmd.Flags().StringP("artifact-id", "a", "demo", "Artifact ID for the project")
 	newCmd.Flags().StringP("type", "t", "maven-project", "Type of project to create")
-	newCmd.Flags().StringP("spring-boot-version", "s", "3.1.0", "Spring Boot version")
-	newCmd.Flags().StringP("java-version", "j", "17", "Java version")
-	
-	rootCmd.AddCommand(newCmd)
+	newCmd.Flags().StringP("spring-boot-version", "s", "3.4.0", "Spring Boot version")
+	newCmd.Flags().StringP("java-version", "j", "21", "Java version")
 }
 
 
@@ -75,7 +73,7 @@ func createNewProject(projectName, groupId, artifactId, typeName, bootVersion, j
 		"name":        projectName,
 		"packageName": fmt.Sprintf("%s.%s", groupId, projectName),
 		"javaVersion": javaVersion,
-		"dependencies": "web", // tu peux rendre ça dynamique plus tard
+		"dependencies": "web",
 	}
 
 	fmt.Println("📦 Downloading Spring Boot project...")
