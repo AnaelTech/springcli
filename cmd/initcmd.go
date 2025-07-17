@@ -62,6 +62,8 @@ func createNewProject(projectName, groupId, artifactId, typeName, bootVersion, j
 	if artifactId == "" {
 		artifactId = projectName
 	}
+	
+	defaultDependencies := "web,data-jpa,validation,actuator"
 
 	params := map[string]string{
 		"type":        typeName,
@@ -73,7 +75,7 @@ func createNewProject(projectName, groupId, artifactId, typeName, bootVersion, j
 		"name":        projectName,
 		"packageName": fmt.Sprintf("%s.%s", groupId, projectName),
 		"javaVersion": javaVersion,
-		"dependencies": "web",
+		"dependencies": defaultDependencies,
 	}
 
 	fmt.Println("📦 Downloading Spring Boot project...")
