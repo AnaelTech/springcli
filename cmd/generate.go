@@ -96,7 +96,7 @@ public class {{.controllerName}} {
 
 func generateController(controllerName string) {
 	params := map[string]string{
-		"controllerName": controllerName,
+		"controllerName": controllerName + "Controller",
 		"serviceName": controllerName + "Service",
 		"repositoryName": controllerName + "Repository",
 		"entityName": controllerName + "Entity",
@@ -166,7 +166,7 @@ public interface {{.serviceName}} {
 
 func generateService(serviceName string) {
 	params := map[string]string{
-		"serviceName": serviceName,
+		"serviceName": serviceName + "Service",
 		"repositoryName": serviceName + "Repository",
 		"entityName": serviceName + "Entity",
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
@@ -235,8 +235,8 @@ public interface {{.repositoryName}} extends JpaRepository<{{.entityName}}, Long
 
 func generateRepository(repositoryName string) {
 	params := map[string]string{
-		"repositoryName": repositoryName,
-		"entityName": repositoryName + "Entity",
+		"repositoryName": repositoryName + "Repository",
+		"entityName": repositoryName,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("repository").Parse(repositoryTemplate)
