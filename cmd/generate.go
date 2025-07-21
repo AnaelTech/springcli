@@ -99,7 +99,7 @@ func generateController(controllerName string) {
 		"controllerName": controllerName + "Controller",
 		"serviceName": controllerName + "Service",
 		"repositoryName": controllerName + "Repository",
-		"entityName": controllerName + "Entity",
+		"entityName": controllerName,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("controller").Parse(controllerTemplate)
@@ -168,7 +168,7 @@ func generateService(serviceName string) {
 	params := map[string]string{
 		"serviceName": serviceName + "Service",
 		"repositoryName": serviceName + "Repository",
-		"entityName": serviceName + "Entity",
+		"entityName": serviceName,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
 	tmpl, err := template.New("service").Parse(serviceTemplate)
