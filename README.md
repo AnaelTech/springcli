@@ -6,6 +6,14 @@ Cli en go pour du Spring et API Rest
 
 Cli en go pour du Spring et API Rest
 
+## TODO
+
+- [ ] Connexion à l'API Maven repository pour ajouter des dépendances
+- [ ] Afficher la version avec l'API Github pour les releases
+- [ ] Gérer l'affichage des logs avec Maven ?
+- [ ] Mieux gérer les relations entre entités
+- [ ] Ajouter un script installer.sh pour faciliter l'installation
+
 ## Installation
 
 ```bash
