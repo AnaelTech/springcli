@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +17,8 @@ const (
     ColorWhite  = "\033[37m"
 )
 
+var version = "0.1.0"
+
 var rootCmd = &cobra.Command{
 	Use:   "springcli",
 	Short: "CLI pour créer et gérer des projets Spring Boot",
@@ -25,6 +26,11 @@ var rootCmd = &cobra.Command{
 configurer et gérer des projets Spring Boot en utilisant Spring Initializr
 et des modèles personnalisés.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		ver, _ := cmd.Flags().GetBool("version")
+		if ver {
+			fmt.Printf("SpringCLI version %s\n", version)
+			os.Exit(0)
+		}
 		fmt.Println(`
 ███████ ██████  ██████  ██ ███    ██  ██████      ██████ ██      ██ 
  ██      ██   ██ ██   ██ ██ ████   ██ ██           ██     ██      ██ 
@@ -45,7 +51,9 @@ func Execute() {
 	}
 }
 
+
 func init() {
 	rootCmd.AddCommand(newCmd)
 	rootCmd.AddCommand(generateCmd)
-	}
+	rootCmd.Flags().BoolP("version", "v", false, "Affiche la version de SpringCLI")
+}
