@@ -10,6 +10,7 @@ import (
 	"springcli/internal/utils"
 	"regexp"
 	"encoding/xml"
+	"springcli/internal/generator" 
 	/* "github.com/charmbracelet/lipgloss" */
 )
 
@@ -48,6 +49,7 @@ func init() {
 	generateCmd.AddCommand(generateServiceCmd)
 	generateCmd.AddCommand(generateRepositoryCmd)
 	generateCmd.AddCommand(generateEntityCmd)
+	generateCmd.AddCommand(generateJwtCmd)
 }
 
 // ===================== GENERATE ==============================
@@ -708,6 +710,34 @@ func mergeRelations(existing, added []Relation) []Relation {
 
 //====================== END ENTITY ========================================================= 
 
+
+//====================== START JWT ========================================================= 
+var generateJwtCmd = &cobra.Command{
+	Use:   "jwt",
+	Short: "Génère la clé publique et privée RSA pour JWT",
+	Long:  `Génère la clé publique et privée RSA pour JWT`,
+	Run: func(cmd *cobra.Command, args []string) {
+		utils.PrintTitle("🔧 GÉNÉRATEUR JWT SPRING BOOT")
+		
+		if len(args) != 0 {
+			utils.PrintError("Cette commande ne prend pas d'arguments")
+			os.Exit(1)
+		}
+		// Check if the keys already exist and folder jwt exists
+		if utils.Exists("public.key") && utils.Exists("private.key") {
+			utils.PrintWarning("Les clés RSA existent déjà. Voulez-vous les écraser ?")
+			if !AskYesNo() {
+				os.Exit(1)
+			}
+		}
+		generator.GeneratePublicPrivateKey()
+	},
+}
+
+// ===================== END JWT ===============================================================
+
+
+
 //=======================FUNCIONS UTILES =====================================================
 func generateFieldsTemplate(fields []Field) string {
 	var buffer bytes.Buffer
@@ -781,4 +811,12 @@ func generateFile(path string, filename string, content []byte) {
 	utils.PrintInfo(fmt.Sprintf("Emplacement: %s/%s", path, filename))
 	utils.PrintInfo(fmt.Sprintf("Taille: %d octets", len(content)))
 }
+
+func AskYesNo() bool {
+	var answer string
+	utils.PrintPrompt("Voulez-vous continuer ? (y/n): ")
+	fmt.Scanln(&answer)
+	return answer == "y"
+}
+
 //======================== END UTILS =========================================================
