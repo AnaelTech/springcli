@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 	
-	"github.com/charmbracelet/lipgloss"
+	/* "github.com/charmbracelet/lipgloss" */
 	"github.com/spf13/cobra"
 	"springcli/internal/utils"
 )
@@ -80,7 +80,7 @@ func displayWelcomeScreen() {
 		"et propose des modèles personnalisés pour accélérer votre développement."))
 	
 	// Fonctionnalités principales
-	displayFeatures()
+	//displayFeatures()
 	
 	// Commandes disponibles
 	displayAvailableCommands()
@@ -89,31 +89,31 @@ func displayWelcomeScreen() {
 	displayHelp()
 }
 
-func displayFeatures() {
-	fmt.Println(utils.CommandHeaderStyle.Render("✨ Fonctionnalités principales"))
-	
-	// Création de deux colonnes pour les fonctionnalités
-	leftFeatures := strings.Builder{}
-	leftFeatures.WriteString(utils.IconStyle.Render("🏗️  ") + "Génération de projets\n")
-	leftFeatures.WriteString("   Spring Boot rapide\n\n")
-	leftFeatures.WriteString(utils.IconStyle.Render("⚙️  ") + "Configuration avancée\n")
-	leftFeatures.WriteString("   Dépendances et plugins\n\n")
-	leftFeatures.WriteString(utils.IconStyle.Render("📦 ") + "Templates personnalisés\n")
-	leftFeatures.WriteString("   Modèles prêts à l'emploi")
-	
-	rightFeatures := strings.Builder{}
-	rightFeatures.WriteString(utils.IconStyle.Render("🔧 ") + "Outils de développement\n")
-	rightFeatures.WriteString("   Scripts et utilitaires\n\n")
-	rightFeatures.WriteString(utils.IconStyle.Render("🚀 ") + "Déploiement simplifié\n")
-	rightFeatures.WriteString("   Configuration Docker\n\n")
-	rightFeatures.WriteString(utils.IconStyle.Render("📊 ") + "Monitoring intégré\n")
-	rightFeatures.WriteString("   Actuator et métriques")
-	
-	leftBox := utils.FeatureBoxStyle.Render(leftFeatures.String())
-	rightBox := utils.FeatureBoxStyle.Render(rightFeatures.String())
-	
-	fmt.Println(lipgloss.JoinHorizontal(lipgloss.Top, leftBox, rightBox))
-}
+// func displayFeatures() {
+// 	fmt.Println(utils.CommandHeaderStyle.Render("✨ Fonctionnalités principales"))
+// 	
+// 	// Création de deux colonnes pour les fonctionnalités
+// 	leftFeatures := strings.Builder{}
+// 	leftFeatures.WriteString(utils.IconStyle.Render("🏗️  ") + "Génération de projets\n")
+// 	leftFeatures.WriteString("   Spring Boot rapide\n\n")
+// 	leftFeatures.WriteString(utils.IconStyle.Render("⚙️  ") + "Configuration avancée\n")
+// 	leftFeatures.WriteString("   Dépendances et plugins\n\n")
+// 	leftFeatures.WriteString(utils.IconStyle.Render("📦 ") + "Templates personnalisés\n")
+// 	leftFeatures.WriteString("   Modèles prêts à l'emploi")
+// 	
+// 	rightFeatures := strings.Builder{}
+// 	rightFeatures.WriteString(utils.IconStyle.Render("🔧 ") + "Outils de développement\n")
+// 	rightFeatures.WriteString("   Scripts et utilitaires\n\n")
+// 	rightFeatures.WriteString(utils.IconStyle.Render("🚀 ") + "Déploiement simplifié\n")
+// 	rightFeatures.WriteString("   Configuration Docker\n\n")
+// 	rightFeatures.WriteString(utils.IconStyle.Render("📊 ") + "Monitoring intégré\n")
+// 	rightFeatures.WriteString("   Actuator et métriques")
+// 	
+// 	leftBox := utils.FeatureBoxStyle.Render(leftFeatures.String())
+// 	rightBox := utils.FeatureBoxStyle.Render(rightFeatures.String())
+// 	
+// 	fmt.Println(lipgloss.JoinHorizontal(lipgloss.Top, leftBox, rightBox))
+// }
 
 func displayAvailableCommands() {
 	fmt.Println(utils.CommandHeaderStyle.Render("📋 Commandes disponibles"))
@@ -125,15 +125,15 @@ func displayAvailableCommands() {
 	commandsBox.WriteString("\n")
 	
 	// Commande generate
-	commandsBox.WriteString(formatCommand("generate", "[type]", "Générer des composants (controller, service, etc.)"))
+	commandsBox.WriteString(formatCommand("generate", "[type]", "Générer des composants"))
 	commandsBox.WriteString("\n")
 	
 	// Commande version
-	commandsBox.WriteString(formatCommand("--version", "", "Afficher la version de SpringCLI"))
+	commandsBox.WriteString(formatCommand("--version, -v", " ", "Afficher la version de SpringCLI"))
 	commandsBox.WriteString("\n")
 	
 	// Commande help
-	commandsBox.WriteString(formatCommand("--help", "", "Afficher l'aide détaillée"))
+	commandsBox.WriteString(formatCommand("--help, -h", " ", "Afficher l'aide détaillée"))
 	
 	fmt.Println(utils.HelpBoxStyle.Render(commandsBox.String()))
 }
