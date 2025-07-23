@@ -13,6 +13,8 @@ Cli en go pour du Spring et API Rest
 - [ ] Gérer l'affichage des logs avec Maven ?
 - [ ] Mieux gérer les relations entre entités
 - [ ] Ajouter un script installer.sh pour faciliter l'installation
+- [ ] Generate fixtures
+- [ ] Clean bdd fixtures cmd
 
 ## Installation
 

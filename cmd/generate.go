@@ -6,12 +6,12 @@ import (
 	"strings"
 	"github.com/spf13/cobra"
 	"text/template"
-	//"path/filepath"
 	"bytes"
 	"springcli/internal/utils"
 	"regexp"
 	"encoding/xml"
-	)
+	/* "github.com/charmbracelet/lipgloss" */
+)
 
 // ===================== TEMPLATE ============================== 
 type TemplateData struct {
@@ -41,8 +41,8 @@ type Project struct {
 		GroupId string `xml:"groupId"`
 	} `xml:"parent"`
 }
-// ===================== INIT ==================================
 
+// ===================== INIT ==================================
 func init() {
 	generateCmd.AddCommand(generateControllerCmd)
 	generateCmd.AddCommand(generateServiceCmd)
@@ -51,28 +51,29 @@ func init() {
 }
 
 // ===================== GENERATE ==============================
-
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate code from templates",
 	Long:  `Generate code from templates`,
 }
 
-
 // ==================== GENERATE CONTROLLER ====================
-
 var generateControllerCmd = &cobra.Command{
 	Use:   "controller [controller-name]",
-	Short: "Génère le code source d’un contrôleur à partir de modèles personnalisés.",
-	Long:  `Cette commande permet de générer automatiquement le code d’un contrôleur Spring Boot
+	Short: "Génère le code source d'un contrôleur à partir de modèles personnalisés.",
+	Long:  `Cette commande permet de générer automatiquement le code d'un contrôleur Spring Boot
 en utilisant des templates adaptés. Elle facilite la création rapide de contrôleurs
 structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		utils.PrintTitle("🎮 GÉNÉRATEUR DE CONTRÔLEUR SPRING BOOT")
+		
 		if len(args) == 0 {
-			fmt.Println("❌ Error: controller name is required")
+			utils.PrintError("Le nom du contrôleur est requis")
 			os.Exit(1)
 		}
 		controllerName := args[0]
+		
+		utils.PrintInfo(fmt.Sprintf("Génération du contrôleur: %s", controllerName))
 		generateController(controllerName)
 	},
 }
@@ -88,11 +89,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class {{.controllerName}} {
-
     @Autowired
     private {{.serviceName}} {{.serviceName}}Service;
 }`
-
 
 func generateController(controllerName string) {
 	params := map[string]string{
@@ -102,54 +101,58 @@ func generateController(controllerName string) {
 		"entityName": controllerName,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
+	
 	tmpl, err := template.New("controller").Parse(controllerTemplate)
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors du parsing du template: %v", err))
 		os.Exit(1)
 	}
+	
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, params); err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'exécution du template: %v", err))
 		os.Exit(1)
 	}
+	
 	path := getJavaSourcePath() + "/controller"
 	filename := controllerName + "Controller.java"
 	fullPath := path + "/" + filename
-
+	
 	// Crée le dossier s'il n'existe pas
 	if !utils.Exists(path) {
 		err := utils.CreateFolder(path)
 		if err != nil {
-			fmt.Println("❌ Erreur lors de la création du dossier:", err)
+			utils.PrintError(fmt.Sprintf("Erreur lors de la création du dossier: %v", err))
 			os.Exit(1)
 		}
 	}
-
+	
 	// Vérifie si le fichier existe déjà
 	if utils.Exists(fullPath) {
-		fmt.Println("❌ Le fichier " + filename + " existe déjà")
+		utils.PrintWarning(fmt.Sprintf("Le fichier %s existe déjà", filename))
 		return
 	}
-	generateFile(path, filename, buf.Bytes())
-}	
-// ==================== END CONTROLLER ================================
-
-
 	
-// ==================== GENERATE SERVICE ==================== 
+	generateFile(path, filename, buf.Bytes())
+}
 
+// ==================== GENERATE SERVICE ==================== 
 var generateServiceCmd = &cobra.Command{
 	Use:   "service [service-name]",
-	Short: "Génère le code source d’un service à partir de modèles personnalisés.",
-	Long:  `Cette commande permet de générer automatiquement le code d’un service Spring Boot
+	Short: "Génère le code source d'un service à partir de modèles personnalisés.",
+	Long:  `Cette commande permet de générer automatiquement le code d'un service Spring Boot
 en utilisant des templates adaptés. Elle facilite la création rapide de services
 structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		utils.PrintTitle("🔧 GÉNÉRATEUR DE SERVICE SPRING BOOT")
+		
 		if len(args) == 0 {
-			fmt.Println("❌ Error: service name is required")
+			utils.PrintError("Le nom du service est requis")
 			os.Exit(1)
 		}
 		serviceName := args[0]
+		
+	utils.PrintInfo(fmt.Sprintf("Génération du service: %s", serviceName))
 		generateService(serviceName)
 	},
 }
@@ -160,8 +163,6 @@ import {{.packageName}}.repository.{{.repositoryName}};
 import {{.packageName}}.entity.{{.entityName}};
 
 public interface {{.serviceName}} {
-
-
 }`
 
 func generateService(serviceName string) {
@@ -171,53 +172,58 @@ func generateService(serviceName string) {
 		"entityName": serviceName,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
+	
 	tmpl, err := template.New("service").Parse(serviceTemplate)
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors du parsing du template: %v", err))
 		os.Exit(1)
 	}
+	
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, params); err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'exécution du template: %v", err))
 		os.Exit(1)
 	}
+	
 	path := getJavaSourcePath() + "/service"
 	filename := serviceName + "Service.java"
 	fullPath := path + "/" + filename
-
+	
 	// Crée le dossier s'il n'existe pas
 	if !utils.Exists(path) {
 		err := utils.CreateFolder(path)
 		if err != nil {
-			fmt.Println("❌ Erreur lors de la création du dossier:", err)
+			utils.PrintError(fmt.Sprintf("Erreur lors de la création du dossier: %v", err))
 			os.Exit(1)
 		}
 	}
-
+	
 	// Vérifie si le fichier existe déjà
 	if utils.Exists(fullPath) {
-		fmt.Println("❌ Le fichier " + filename + " existe déjà")
+		utils.PrintWarning(fmt.Sprintf("Le fichier %s existe déjà", filename))
 		return
 	}
+	
 	generateFile(path, filename, buf.Bytes())
 }
-// ==================== END SERVICE ================================
-
 
 // ==================== GENERATE REPOSITORY ==================== 
-
 var generateRepositoryCmd = &cobra.Command{
 	Use:   "repository [repository-name]",
-	Short: "Génère le code source d’une interface de dépôt à partir de modèles personnalisés.",
-	Long:  `Cette commande permet de générer automatiquement le code d’une interface de dépôt Spring Boot
-en utilisant des templates adaptés. Elle facilite la création rapide d’interfaces de dépôt
+	Short: "Génère le code source d'une interface de dépôt à partir de modèles personnalisés.",
+	Long:  `Cette commande permet de générer automatiquement le code d'une interface de dépôt Spring Boot
+en utilisant des templates adaptés. Elle facilite la création rapide d'interfaces de dépôt
 structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		utils.PrintTitle("🗄️  GÉNÉRATEUR DE REPOSITORY SPRING BOOT")
+		
 		if len(args) == 0 {
-			fmt.Println("❌ Error: repository name is required")
+			utils.PrintError("Le nom du repository est requis")
 			os.Exit(1)
 		}
 		repositoryName := args[0]
+		
+		utils.PrintInfo(fmt.Sprintf("Génération du repository: %s", repositoryName))
 		generateRepository(repositoryName)
 	},
 }
@@ -230,7 +236,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface {{.repositoryName}} extends JpaRepository<{{.entityName}}, Long> {
-
 }`
 
 func generateRepository(repositoryName string) {
@@ -239,52 +244,55 @@ func generateRepository(repositoryName string) {
 		"entityName": repositoryName,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
+	
 	tmpl, err := template.New("repository").Parse(repositoryTemplate)
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors du parsing du template: %v", err))
 		os.Exit(1)
 	}
+	
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, params); err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'exécution du template: %v", err))
 		os.Exit(1)
 	}
+	
 	path := getJavaSourcePath() + "/repository"
 	filename := repositoryName + "Repository.java"
 	fullPath := path + "/" + filename
-
+	
 	// Crée le dossier s'il n'existe pas
 	if !utils.Exists(path) {
 		err := utils.CreateFolder(path)
 		if err != nil {
-			fmt.Println("❌ Erreur lors de la création du dossier:", err)
+			utils.PrintError(fmt.Sprintf("Erreur lors de la création du dossier: %v", err))
 			os.Exit(1)
 		}
 	}
-
+	
 	// Vérifie si le fichier existe déjà
 	if utils.Exists(fullPath) {
-		fmt.Println("Le fichier " + filename + " existe déjà")
+		utils.PrintWarning(fmt.Sprintf("Le fichier %s existe déjà", filename))
 		return
 	}
+	
 	generateFile(path, filename, buf.Bytes())
 }
 
-// ==================== END REPOSITORY ======================
-
-
 // ==================== GENERATE ENTITY ====================== 
-
 var generateEntityCmd = &cobra.Command{
 	Use:   "entity [entity-name] [fields...]",
-	Short: "Génère le code source d’une entité à partir de modèles personnalisés.",
-	Long:  `Génère le code source d’une entité Spring Boot en utilisant des templates adaptés.
-Elle facilite la création rapide d’entités structurées et conformes aux bonnes pratiques du projet.`,
+	Short: "Génère le code source d'une entité à partir de modèles personnalisés.",
+	Long:  `Génère le code source d'une entité Spring Boot en utilisant des templates adaptés.
+Elle facilite la création rapide d'entités structurées et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		utils.PrintTitle("🏗️  GÉNÉRATEUR D'ENTITÉ SPRING BOOT")
+		
 		if len(args) == 0 {
-			fmt.Println("❌ Error: entity name is required")
+			utils.PrintError("Le nom de l'entité est requis")
 			os.Exit(1)
 		} 
+		
 		entityName := args[0]
 		var fields []Field
 		var relations []Relation
@@ -292,14 +300,16 @@ Elle facilite la création rapide d’entités structurées et conformes aux bon
 		filename := entityName + ".java"
 		fullPath := path + "/" + filename
 		
-		
 		if utils.Exists(fullPath) {
-			fmt.Println("Que voulez ajouter à l'entité "+entityName+" ?")
-	    fields, relations = askFieldsAndRelations()
+			utils.PrintInfo(fmt.Sprintf("L'entité %s existe déjà", entityName))
+			utils.PrintSubtitle("Que voulez-vous ajouter à cette entité ?")
+			fields, relations = askFieldsAndRelations()
 			updateEntity(entityName, fields, relations)
-      return
+			return
 		}
-
+		
+		utils.PrintInfo(fmt.Sprintf("Création de l'entité: %s", entityName))
+		
 		if len(args) == 1 {
 			fields, relations = askFieldsAndRelations()
 		} else {
@@ -307,7 +317,6 @@ Elle facilite la création rapide d’entités structurées et conformes aux bon
 			relations = parseRelations(args[1:])
 		}
 		
-
 		generateEntity(entityName, fields, relations)
 	},
 }
@@ -323,7 +332,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "{{.tableName}}")
 public class {{.entityName}} {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -331,50 +339,52 @@ public class {{.entityName}} {
 		{{range .fields}}
 		private {{.Type}} {{.Name}};
 		{{end}}
-
 		{{range .relations}}
-		@{{.Type}}
+		{{.Type}}
 		private {{.Target}} {{.Name}};
 		{{end}}
 }`
 
 func generateEntity(entityName string, fields []Field, relations []Relation) {
-		params := map[string]interface{}{
+	params := map[string]interface{}{
 		"entityName": entityName,
 		"tableName": strings.ToLower(entityName),
 		"fields": fields,
 		"relations": relations,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
+	
 	tmpl, err := template.New("entity").Parse(entityTemplate)
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors du parsing du template: %v", err))
 		os.Exit(1)
 	}
+	
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, params); err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'exécution du template: %v", err))
 		os.Exit(1)
 	}
+	
 	path := getJavaSourcePath() + "/entity"
 	filename := entityName + ".java"
 	fullPath := path + "/" + filename
-
+	
 	// Crée le dossier s'il n'existe pas
 	if !utils.Exists(path) {
 		err := utils.CreateFolder(path)
 		if err != nil {
-			fmt.Println("❌ Erreur lors de la création du dossier:", err)
+			utils.PrintError(fmt.Sprintf("Erreur lors de la création du dossier: %v", err))
 			os.Exit(1)
 		}
 	}
-
+	
 	// Vérifie si le fichier existe déjà
 	if utils.Exists(fullPath) {
-		fmt.Println("❌ Le fichier " + filename + " existe déjà")
+		utils.PrintWarning(fmt.Sprintf("Le fichier %s existe déjà", filename))
 		return
 	}
-
+	
 	generateFile(path, filename, buf.Bytes())
 }
 
@@ -382,21 +392,23 @@ func updateEntity(entityName string, fields []Field, relations []Relation) {
 	path := getJavaSourcePath() + "/entity"
 	filename := entityName + ".java"
 	fullPath := path + "/" + filename
-
+	
 	existingContent, err := os.ReadFile(fullPath)
 	var existingFields []Field
 	var existingRelations []Relation
+	
 	if err == nil {
-		fmt.Println("Le fichier " + filename + " existe déjà, mise à jour en cours...")
+		utils.PrintInfo(fmt.Sprintf("Mise à jour du fichier %s...", filename))
 		existingFields = extractFields(string(existingContent))
 		existingRelations = extractRelations(string(existingContent))
 	} else if !os.IsNotExist(err) {
-		fmt.Println("Erreur lors de la lecture du fichier existant:", err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de la lecture du fichier existant: %v", err))
 		os.Exit(1)
 	}
+	
 	mergedFields := mergeFields(existingFields, fields)
 	mergedRelations := mergeRelations(existingRelations, relations)
-
+	
 	params := map[string]interface{}{
 		"entityName":  entityName,
 		"tableName":   strings.ToLower(entityName),
@@ -404,23 +416,26 @@ func updateEntity(entityName string, fields []Field, relations []Relation) {
 		"relations":   mergedRelations,
 		"packageName": strings.ReplaceAll(getJavaSourcePath()[len("src/main/java/"):], "/", "."),
 	}
+	
 	tmpl, err := template.New("entity").Parse(entityTemplate)
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors du parsing du template: %v", err))
 		os.Exit(1)
 	}
+	
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, params); err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'exécution du template: %v", err))
 		os.Exit(1)
 	}
-
+	
 	err = os.WriteFile(fullPath, buf.Bytes(), 0644)
 	if err != nil {
-		fmt.Println("Erreur lors de l'écriture du fichier:", err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'écriture du fichier: %v", err))
 		os.Exit(1)
 	}
-	fmt.Printf("✅ Fichier %s mis à jour avec succès.\n", filename)
+	
+	utils.PrintSuccess(fmt.Sprintf("Fichier %s mis à jour avec succès", filename))
 }
 
 func extractFields(javaContent string) []Field {
@@ -472,9 +487,13 @@ func generateFields(entityName string) string {
 func askFieldsAndRelations() ([]Field , []Relation) {
 	var fields []Field
 	var relations []Relation
+	
+	utils.PrintSubtitle("Configuration des champs de l'entité")
+	utils.PrintBox("Tapez 'relations' comme nom de propriété pour configurer les relations JPA")
+	
 	for {
 		var name, typ string
-		fmt.Print("Nom de la propriété (laisser vide pour finir): ")
+		utils.PrintPrompt("Nom de la propriété (laisser vide pour finir): ")
 		fmt.Scanln(&name)
 		if name == "" {
 			break
@@ -483,24 +502,29 @@ func askFieldsAndRelations() ([]Field , []Relation) {
 			relations = append(relations, rs...)
 			continue
 		}
+		
 		for {
-		fmt.Print("Type du champ tapez (?) pour voir la liste des types disponibles: ")
-		fmt.Scanln(&typ)
-		if typ == "?" {
-			fmt.Println("Types disponibles:")
-			for _, t := range allTypes() {
-				fmt.Println(t)
+			utils.PrintPrompt("Type du champ (tapez '?' pour voir la liste): ")
+			fmt.Scanln(&typ)
+			if typ == "?" {
+				utils.PrintSubtitle("Types disponibles:")
+				for _, t := range allTypes() {
+					fmt.Println(utils.ListItemStyle.Render(t))
+				}
+				continue
 			}
-			continue
-		}
 			break
 		}
+		
 		fields = append(fields, Field{
 			Name: name,
 			Type: javaType(typ),
 			JsonName: name,
 		})
+		
+		utils.PrintSuccess(fmt.Sprintf("Champ ajouté: %s (%s)", name, javaType(typ)))
 	}
+	
 	return fields, relations
 }
 
@@ -525,9 +549,9 @@ func javaType(t string) string {
 	case "LocalDateTime":
 		return "LocalDateTime"
 	case "?":
-		fmt.Println("Types disponibles:")
+		utils.PrintSubtitle("Types disponibles:")
 		for _, t := range allTypes() {
-			fmt.Println(t)
+			fmt.Println(utils.ListItemStyle.Render(t))
 		}
 		return ""
 	default:
@@ -550,7 +574,6 @@ func parseFields(fieldArgs []string) []Field {
 	return fields
 }
 
-
 func parseRelations(fieldArgs []string) []Relation {
 	relations := make([]Relation, 0)
 	for _, arg := range fieldArgs {
@@ -568,44 +591,72 @@ func parseRelations(fieldArgs []string) []Relation {
 
 func askRelations() []Relation {
 	var relations []Relation
+	
+	utils.PrintSubtitle("Configuration des relations JPA")
+	
 	for {
 		var name, typ string
-		fmt.Print("Nom de la relation (laisser vide pour finir): ")
+		utils.PrintPrompt("Nom de la relation (laisser vide pour finir): ")
 		fmt.Scanln(&name)
 		if name == "" {
 			break 
 		}
-		fmt.Println("Type de relations ")
-		fmt.Println(allRelations())
-		fmt.Print("Type de la relation: ")
+		
+		utils.PrintSubtitle("Types de relations disponibles:")
+		fmt.Println(formatRelationsTable())
+		utils.PrintPrompt("Type de la relation: ")
 		fmt.Scanln(&typ)
+		
 		relations = append(relations, Relation{
 			Name: name,
-			Type: typ,
+			Type: relationsType(typ),
 			Target: askTarget(),
 		})
+		
+		utils.PrintSuccess(fmt.Sprintf("Relation ajoutée: %s (%s)", name, typ))
 	}
 	return relations
 }
 
 func askTarget() string {
 	var target string
-	fmt.Print("Nom de la classe cible: ")
+	utils.PrintPrompt("Nom de la classe cible: ")
 	fmt.Scanln(&target)
 	return target
 }
 
+func formatRelationsTable() string {
+	headers := []string{"Nom", "Description"}
+	rows := [][]string{
+		{"OneToOne", "Relation 1-1 : chaque entité A a une entité B"},
+		{"OneToMany", "1-N : une entité A a plusieurs B"},
+		{"ManyToOne", "N-1 : plusieurs entités A pour une entité B"},
+		{"ManyToMany", "N-N : plusieurs A pour plusieurs B"},
+	}
+	
+	var table strings.Builder
+	
+	// En-têtes
+	headerRow := ""
+	for _, header := range headers {
+		headerRow += utils.TableHeaderStyle.Width(25).Render(header)
+	}
+	table.WriteString(headerRow + "\n")
+	
+	// Lignes
+	for _, row := range rows {
+		rowStr := ""
+		for _, cell := range row {
+			rowStr += utils.TableCellStyle.Width(25).Render(cell)
+		}
+		table.WriteString(rowStr + "\n")
+	}
+	
+	return utils.BoxStyle.Render(table.String())
+}
+
 func allRelations() string {
-		return `
-+-------------+---------------------------------------------------+
-|   Nom       | Description                                       |
-+-------------+---------------------------------------------------+
-| OneToOne    | Relation 1-1 : chaque entité A a une entité B     |
-| OneToMany   | 1-N : une entité A a plusieurs B                  |
-| ManyToOne   | N-1 : plusieurs entités A pour une entité B       |
-| ManyToMany  | N-N : plusieurs A pour plusieurs B                |
-+-------------+---------------------------------------------------+
-`
+	return formatRelationsTable()
 }
 
 func relationsType(typ string) string {
@@ -657,15 +708,13 @@ func mergeRelations(existing, added []Relation) []Relation {
 
 //====================== END ENTITY ========================================================= 
 
-
 //=======================FUNCIONS UTILES =====================================================
-
 func generateFieldsTemplate(fields []Field) string {
 	var buffer bytes.Buffer
 	t := template.Must(template.New("fields").Parse("{{range .}}{{.Name}} {{.Type}};\n{{end}}"))
 	err := t.Execute(&buffer, fields)
 	if err != nil {
-		fmt.Println(err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de la génération des champs: %v", err))
 		os.Exit(1)
 	}
 	return buffer.String()
@@ -673,13 +722,11 @@ func generateFieldsTemplate(fields []Field) string {
 
 func getJavaSourcePath() string {
 	base := "src/main/java/" + getPackageName()
-
 	entries, err := os.ReadDir(base)
 	if err != nil {
 		// fallback to base groupId path
 		return base
 	}
-
 	// Check if there's exactly one subfolder (typical in Spring apps)
 	for _, entry := range entries {
 		if entry.IsDir() {
@@ -689,57 +736,49 @@ func getJavaSourcePath() string {
 	return base
 }
 
-
-
- func getPackageName() string {
+func getPackageName() string {
 	pomPath := "./pom.xml"
 	strict := true // Si strict est vrai, on ne prend pas le groupId du parent
+	
 	data, err := os.ReadFile(pomPath)
 	if err != nil {
-		fmt.Printf("❌ Failed to read %s: %v\n", pomPath, err)
+		utils.PrintError(fmt.Sprintf("Impossible de lire %s: %v", pomPath, err))
 		os.Exit(1)
 	}
-
+	
 	var project Project
 	if err := xml.Unmarshal(data, &project); err != nil {
-		fmt.Printf("❌ Failed to parse %s: %v\n", pomPath, err)
+		utils.PrintError(fmt.Sprintf("Impossible de parser %s: %v", pomPath, err))
 		os.Exit(1)
 	}
-
+	
 	// Priorité au groupId défini dans <project>
 	if project.GroupId != "" {
 		return strings.ReplaceAll(project.GroupId, ".", "/")
 	}
-
+	
 	// Fallback : utiliser <parent><groupId> si strict mode désactivé
 	if !strict && project.Parent.GroupId != "" {
-		fmt.Printf("⚠️  groupId not found in <project>. Using parent groupId: %s\n", project.Parent.GroupId)
+		utils.PrintWarning(fmt.Sprintf("groupId non trouvé dans <project>. Utilisation du groupId parent: %s", project.Parent.GroupId))
 		return strings.ReplaceAll(project.Parent.GroupId, ".", "/")
 	}
-
+	
 	// Sinon erreur
-	fmt.Println("❌ groupId not found in pom.xml (<project> or <parent>)")
+	utils.PrintError("groupId non trouvé dans pom.xml (<project> ou <parent>)")
 	os.Exit(1)
 	return ""
 }
 
-
-//func getPackageName() string {
-//	wd, err := os.Getwd()
-//	if err != nil {
-//		fmt.Println(err)
-//		os.Exit(1)
-//	}
-//	return strings.Replace(filepath.Base(wd), "cmd", "", 1)
-//}
-
-func generateFile(Path string, filename string, content []byte) {
-	err := os.WriteFile(Path+"/"+filename, content, 0644)
+func generateFile(path string, filename string, content []byte) {
+	err := os.WriteFile(path+"/"+filename, content, 0644)
 	if err != nil {
-		fmt.Println("❌ Erreur lors de l'écriture du fichier:", err)
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'écriture du fichier: %v", err))
 		os.Exit(1)
 	}
-	fmt.Printf("✅ Fichier %s généré avec succès.\n", filename)
+	utils.PrintSuccess(fmt.Sprintf("Fichier %s généré avec succès", filename))
+	
+	// Afficher des informations supplémentaires
+	utils.PrintInfo(fmt.Sprintf("Emplacement: %s/%s", path, filename))
+	utils.PrintInfo(fmt.Sprintf("Taille: %d octets", len(content)))
 }
-
 //======================== END UTILS =========================================================
