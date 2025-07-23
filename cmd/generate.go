@@ -724,7 +724,7 @@ var generateJwtCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		// Check if the keys already exist and folder jwt exists
-		if utils.Exists("public.key") && utils.Exists("private.key") {
+		if utils.Exists("jwt/public.key") && utils.Exists("jwt/private.key") {
 			utils.PrintWarning("Les clés RSA existent déjà. Voulez-vous les écraser ?")
 			if !AskYesNo() {
 				os.Exit(1)
