@@ -1,71 +1,53 @@
 # springcli
 
-Cli en go pour du Spring et API Rest
+Un CLI moderne pour générer et gérer facilement des projets Spring Boot avec Go, en utilisant [Spring Initializr](https://start.spring.io/) et des templates personnalisés (contrôleurs, services, JWT, etc.).
 
-## Description
-
-Cli en go pour du Spring et API Rest
-
-## TODO
-
-- [ ] Connexion à l'API Maven repository pour ajouter des dépendances
-- [ ] Afficher la version avec l'API Github pour les releases
-- [ ] Gérer l'affichage des logs avec Maven ?
-- [ ] Mieux gérer les relations entre entités
-- [ ] Ajouter un script installer.sh pour faciliter l'installation
-- [ ] Generate fixtures
-- [ ] Clean bdd fixtures cmd
+![build](https://github.com/AnaelTech/springcli/actions/workflows/go.yml/badge.svg)
 
 ## Installation
 
+### 1. Cloner le dépôt et compiler
 ```bash
-# Clone le dépôt
-git clone https://github.com/votre-utilisateur/springcli.git
+git clone https://github.com/AnaelTech/springcli.git
 cd springcli
-
-# Compile le binaire
-go build -o springcli ./cmd
-
-# Donner les permissions d'exécution
-chmod +x springcli
-
-# (Optionnel) Ajoute le binaire à ton PATH
-sudo mv springcli /usr/local/bin/
+go build -o springcli
 ```
 
-## Utilisation
-
+### 2. Installer le binaire dans votre PATH pour n'utiliser que `springcli`
+#### Linux/macOS
 ```bash
-# Créer un nouveau projet Spring Boot
-springcli new monprojet
-
-# Générer une entité
-springcli generate entity User name:string age:int
-
-# Générer un service
-springcli generate service User
-
-# Générer un contrôleur
-springcli generate controller User
-
-# Voir toutes les commandes disponibles
+mkdir -p ~/.local/bin
+cp springcli ~/.local/bin/
+# Vérifier que ~/.local/bin est dans votre PATH :
+echo $PATH | grep ".local/bin" || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+# Rechargez le shell ou sourcez ~/.bashrc
+```
+Ensuite, tapez simplement :
+```bash
 springcli --help
 ```
 
-## Contribution
-
-Les contributions sont les bienvenues ! N'hésitez pas à :
-
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité
-3. Commit vos changements
-4. Push vers la branche
-5. Ouvrir une Pull Request
-
-## Licence
-
-Ce projet est sous licence [MIT](LICENSE).
+#### Windows 
+```powershell
+# Déplacer le binaire springcli.exe vers %USERPROFILE%\go\bin ou %USERPROFILE%\.local\bin
+mkdir $env:USERPROFILE\go\bin -ea 0
+move springcli.exe $env:USERPROFILE\go\bin\springcli.exe
+# Ajoutez ce dossier à votre PATH si besoin, puis ouvrez une nouvelle fenêtre de terminal :
+# $env:PATH += ";$env:USERPROFILE\go\bin"
+# Pour tester :
+springcli.exe --help
+```
 
 ---
 
-> Généré avec le script GitHub Repository Creator
+## Utilisation rapide
+
+```bash
+springcli new mon-projet
+springcli generate controller UserController
+springcli generate service User
+```
+
+(...)
+
+© 2026 AnaelTech | Licence MIT

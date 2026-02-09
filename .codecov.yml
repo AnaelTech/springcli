@@ -1,0 +1,6 @@
+run:
+  coverage:
+    operating_systems: [linux]
+    tool: go
+    config:
+      flags: [--covermode, atomic]
