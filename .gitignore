@@ -31,4 +31,4 @@ tmp/
 temp/
 .tmp/
 .cache/
-
+build.sh
