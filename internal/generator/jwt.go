@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+
 	"springcli/internal/utils"
 )
 
@@ -32,13 +33,23 @@ func GeneratePublicPrivateKey() {
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	}
+
 	privateKeyFile, err := os.Create("jwt/private.key")
 	if err != nil {
 		utils.PrintError(fmt.Sprintf("Erreur lors de la création du fichier: %v", err))
 		os.Exit(1)
 	}
-	pem.Encode(privateKeyFile, privateKeyPEM)
-	privateKeyFile.Close()
+
+	if err := pem.Encode(privateKeyFile, privateKeyPEM); err != nil {
+		_ = privateKeyFile.Close()
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'encodage de la clé privée: %v", err))
+		os.Exit(1)
+	}
+
+	if err := privateKeyFile.Close(); err != nil {
+		utils.PrintError(fmt.Sprintf("Erreur lors de la fermeture du fichier: %v", err))
+		os.Exit(1)
+	}
 
 	// Extract the public key from the private key
 	publicKey := &privateKey.PublicKey
@@ -48,13 +59,23 @@ func GeneratePublicPrivateKey() {
 		Type:  "RSA PUBLIC KEY",
 		Bytes: x509.MarshalPKCS1PublicKey(publicKey),
 	}
+
 	publicKeyFile, err := os.Create("jwt/public.key")
 	if err != nil {
 		utils.PrintError(fmt.Sprintf("Erreur lors de la création du fichier: %v", err))
 		os.Exit(1)
 	}
-	pem.Encode(publicKeyFile, publicKeyPEM)
-	publicKeyFile.Close()
+
+	if err := pem.Encode(publicKeyFile, publicKeyPEM); err != nil {
+		_ = publicKeyFile.Close()
+		utils.PrintError(fmt.Sprintf("Erreur lors de l'encodage de la clé publique: %v", err))
+		os.Exit(1)
+	}
+
+	if err := publicKeyFile.Close(); err != nil {
+		utils.PrintError(fmt.Sprintf("Erreur lors de la fermeture du fichier: %v", err))
+		os.Exit(1)
+	}
 
 	utils.PrintSuccess("Les clés RSA ont été générées avec succès")
 }

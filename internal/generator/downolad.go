@@ -14,6 +14,7 @@ func DownloadSpringProject(params map[string]string, dest string) error {
 	if _, ok := params["bootVersion"]; !ok {
 		params["bootVersion"] = "4.0.2"
 	}
+
 	baseURL := "https://start.spring.io/starter.zip"
 	req, err := http.NewRequest("GET", baseURL, nil)
 	if err != nil {
@@ -30,19 +31,24 @@ func DownloadSpringProject(params map[string]string, dest string) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("failed to download zip: status %d, body: %s", resp.StatusCode, string(body))
 	}
-	defer resp.Body.Close()
 
 	// Lire le zip en mémoire
 	tmpZip, err := os.CreateTemp("", "spring-initializr-*.zip")
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tmpZip.Name())
-	defer tmpZip.Close()
+	defer func() {
+		_ = tmpZip.Close()
+		_ = os.Remove(tmpZip.Name())
+	}()
 
 	_, err = io.Copy(tmpZip, resp.Body)
 	if err != nil {
@@ -62,7 +68,9 @@ func unzip(src, dest string) error {
 	if err != nil {
 		return err
 	}
-	defer r.Close()
+	defer func() {
+		_ = r.Close()
+	}()
 
 	for _, f := range r.File {
 		// On enlève le premier dossier du chemin (baseDir)
@@ -73,9 +81,11 @@ func unzip(src, dest string) error {
 		} else {
 			relPath = parts[0]
 		}
+
 		if relPath == "" {
 			continue
 		}
+
 		fpath := filepath.Join(dest, relPath)
 
 		// ZipSlip check
@@ -101,13 +111,14 @@ func unzip(src, dest string) error {
 
 		rc, err := f.Open()
 		if err != nil {
-			outFile.Close()
+			_ = outFile.Close()
 			return err
 		}
 
 		_, err = io.Copy(outFile, rc)
-		outFile.Close()
-		rc.Close()
+		_ = rc.Close()
+		_ = outFile.Close()
+
 		if err != nil {
 			return err
 		}

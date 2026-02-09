@@ -70,13 +70,11 @@ en utilisant des templates adaptés. Elle facilite la création rapide de contr�
 structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintTitle("🎮 GÉNÉRATEUR DE CONTRÔLEUR SPRING BOOT")
-
 		if len(args) == 0 {
 			utils.PrintError("Le nom du contrôleur est requis")
 			os.Exit(1)
 		}
 		controllerName := args[0]
-
 		utils.PrintInfo(fmt.Sprintf("Génération du contrôleur: %s", controllerName))
 		generateController(controllerName)
 	},
@@ -149,13 +147,11 @@ en utilisant des templates adaptés. Elle facilite la création rapide de servic
 structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintTitle("🔧 GÉNÉRATEUR DE SERVICE SPRING BOOT")
-
 		if len(args) == 0 {
 			utils.PrintError("Le nom du service est requis")
 			os.Exit(1)
 		}
 		serviceName := args[0]
-
 		utils.PrintInfo(fmt.Sprintf("Génération du service: %s", serviceName))
 		generateService(serviceName)
 	},
@@ -167,6 +163,7 @@ import {{.packageName}}.repository.{{.repositoryName}};
 import {{.packageName}}.entity.{{.entityName}};
 
 public interface {{.serviceName}} {
+
 }`
 
 func generateService(serviceName string) {
@@ -220,13 +217,11 @@ en utilisant des templates adaptés. Elle facilite la création rapide d'interfa
 structurés et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintTitle("🗄️  GÉNÉRATEUR DE REPOSITORY SPRING BOOT")
-
 		if len(args) == 0 {
 			utils.PrintError("Le nom du repository est requis")
 			os.Exit(1)
 		}
 		repositoryName := args[0]
-
 		utils.PrintInfo(fmt.Sprintf("Génération du repository: %s", repositoryName))
 		generateRepository(repositoryName)
 	},
@@ -240,6 +235,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface {{.repositoryName}} extends JpaRepository<{{.entityName}}, Long> {
+
 }`
 
 func generateRepository(repositoryName string) {
@@ -291,15 +287,14 @@ var generateEntityCmd = &cobra.Command{
 Elle facilite la création rapide d'entités structurées et conformes aux bonnes pratiques du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintTitle("🏗️  GÉNÉRATEUR D'ENTITÉ SPRING BOOT")
-
 		if len(args) == 0 {
 			utils.PrintError("Le nom de l'entité est requis")
 			os.Exit(1)
 		}
-
 		entityName := args[0]
 		var fields []Field
 		var relations []Relation
+
 		path := getJavaSourcePath() + "/entity"
 		filename := entityName + ".java"
 		fullPath := path + "/" + filename
@@ -313,7 +308,6 @@ Elle facilite la création rapide d'entités structurées et conformes aux bonne
 		}
 
 		utils.PrintInfo(fmt.Sprintf("Création de l'entité: %s", entityName))
-
 		if len(args) == 1 {
 			fields, relations = askFieldsAndRelations()
 		} else {
@@ -339,14 +333,15 @@ public class {{.entityName}} {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-		
-		{{range .fields}}
-		private {{.Type}} {{.Name}};
-		{{end}}
-		{{range .relations}}
-		{{.Type}}
-		private {{.Target}} {{.Name}};
-		{{end}}
+			
+	{{range .fields}}
+	private {{.Type}} {{.Name}};
+	{{end}}
+	
+	{{range .relations}}
+	{{.Type}}
+	private {{.Target}} {{.Name}};
+	{{end}}
 }`
 
 func generateEntity(entityName string, fields []Field, relations []Relation) {
@@ -445,6 +440,7 @@ func updateEntity(entityName string, fields []Field, relations []Relation) {
 func extractFields(javaContent string) []Field {
 	fieldRegexp := regexp.MustCompile(`(?m)^\s*private\s+(\w+)\s+(\w+);`)
 	matches := fieldRegexp.FindAllStringSubmatch(javaContent, -1)
+
 	var fields []Field
 	for _, m := range matches {
 		fields = append(fields, Field{
@@ -452,6 +448,7 @@ func extractFields(javaContent string) []Field {
 			Name: m[2],
 		})
 	}
+
 	return fields
 }
 
@@ -469,23 +466,13 @@ func mergeFields(existing, added []Field) []Field {
 		}
 		fieldMap[f.Name] = f
 	}
+
 	merged := make([]Field, 0, len(fieldMap))
 	for _, f := range fieldMap {
 		merged = append(merged, f)
 	}
-	return merged
-}
 
-func generateFields(entityName string) string {
-	fields := make([]Field, 0)
-	for _, field := range strings.Split(entityName, ",") {
-		fields = append(fields, Field{
-			Name:     field,
-			Type:     "String",
-			JSONName: field,
-		})
-	}
-	return generateFieldsTemplate(fields)
+	return merged
 }
 
 func askFieldsAndRelations() ([]Field, []Relation) {
@@ -498,7 +485,7 @@ func askFieldsAndRelations() ([]Field, []Relation) {
 	for {
 		var name, typ string
 		utils.PrintPrompt("Nom de la propriété (laisser vide pour finir): ")
-		fmt.Scanln(&name)
+		_, _ = fmt.Scanln(&name)
 		if name == "" {
 			break
 		} else if name == "relations" {
@@ -509,7 +496,7 @@ func askFieldsAndRelations() ([]Field, []Relation) {
 
 		for {
 			utils.PrintPrompt("Type du champ (tapez '?' pour voir la liste): ")
-			fmt.Scanln(&typ)
+			_, _ = fmt.Scanln(&typ)
 			if typ == "?" {
 				utils.PrintSubtitle("Types disponibles:")
 				for _, t := range allTypes() {
@@ -525,7 +512,6 @@ func askFieldsAndRelations() ([]Field, []Relation) {
 			Type:     javaType(typ),
 			JSONName: name,
 		})
-
 		utils.PrintSuccess(fmt.Sprintf("Champ ajouté: %s (%s)", name, javaType(typ)))
 	}
 
@@ -601,7 +587,7 @@ func askRelations() []Relation {
 	for {
 		var name, typ string
 		utils.PrintPrompt("Nom de la relation (laisser vide pour finir): ")
-		fmt.Scanln(&name)
+		_, _ = fmt.Scanln(&name)
 		if name == "" {
 			break
 		}
@@ -609,23 +595,23 @@ func askRelations() []Relation {
 		utils.PrintSubtitle("Types de relations disponibles:")
 		fmt.Println(formatRelationsTable())
 		utils.PrintPrompt("Type de la relation: ")
-		fmt.Scanln(&typ)
+		_, _ = fmt.Scanln(&typ)
 
 		relations = append(relations, Relation{
 			Name:   name,
 			Type:   relationsType(typ),
 			Target: askTarget(),
 		})
-
 		utils.PrintSuccess(fmt.Sprintf("Relation ajoutée: %s (%s)", name, typ))
 	}
+
 	return relations
 }
 
 func askTarget() string {
 	var target string
 	utils.PrintPrompt("Nom de la classe cible: ")
-	fmt.Scanln(&target)
+	_, _ = fmt.Scanln(&target)
 	return target
 }
 
@@ -639,7 +625,6 @@ func formatRelationsTable() string {
 	}
 
 	var table strings.Builder
-
 	// En-têtes
 	headerRow := ""
 	for _, header := range headers {
@@ -657,10 +642,6 @@ func formatRelationsTable() string {
 	}
 
 	return utils.BoxStyle.Render(table.String())
-}
-
-func allRelations() string {
-	return formatRelationsTable()
 }
 
 func relationsType(typ string) string {
@@ -682,6 +663,7 @@ func extractRelations(javaContent string) []Relation {
 	// regex pour trouver les relations de type @ManyToOne private User user;
 	relationRegexp := regexp.MustCompile(`@(\w+)\s+private\s+(\w+)\s+(\w+);`)
 	matches := relationRegexp.FindAllStringSubmatch(javaContent, -1)
+
 	var relations []Relation
 	for _, m := range matches {
 		relations = append(relations, Relation{
@@ -690,6 +672,7 @@ func extractRelations(javaContent string) []Relation {
 			Name:   m[3],
 		})
 	}
+
 	return relations
 }
 
@@ -703,27 +686,29 @@ func mergeRelations(existing, added []Relation) []Relation {
 		key := r.Name + "|" + r.Type + "|" + r.Target
 		relationMap[key] = r
 	}
+
 	merged := make([]Relation, 0, len(relationMap))
 	for _, r := range relationMap {
 		merged = append(merged, r)
 	}
+
 	return merged
 }
 
 //====================== END ENTITY =========================================================
-
 // ====================== START JWT =========================================================
+
 var generateJwtCmd = &cobra.Command{
 	Use:   "jwt",
 	Short: "Génère la clé publique et privée RSA pour JWT",
 	Long:  `Génère la clé publique et privée RSA pour JWT`,
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.PrintTitle("🔧 GÉNÉRATEUR JWT SPRING BOOT")
-
 		if len(args) != 0 {
 			utils.PrintError("Cette commande ne prend pas d'arguments")
 			os.Exit(1)
 		}
+
 		// Check if the keys already exist and folder jwt exists
 		if utils.Exists("jwt/public.key") && utils.Exists("jwt/private.key") {
 			utils.PrintWarning("Les clés RSA existent déjà. Voulez-vous les écraser ?")
@@ -731,6 +716,7 @@ var generateJwtCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+
 		generator.GeneratePublicPrivateKey()
 	},
 }
@@ -738,16 +724,6 @@ var generateJwtCmd = &cobra.Command{
 // ===================== END JWT ===============================================================
 
 // =======================FUNCIONS UTILES =====================================================
-func generateFieldsTemplate(fields []Field) string {
-	var buffer bytes.Buffer
-	t := template.Must(template.New("fields").Parse("{{range .}}{{.Name}} {{.Type}};\n{{end}}"))
-	err := t.Execute(&buffer, fields)
-	if err != nil {
-		utils.PrintError(fmt.Sprintf("Erreur lors de la génération des champs: %v", err))
-		os.Exit(1)
-	}
-	return buffer.String()
-}
 
 func getJavaSourcePath() string {
 	base := "src/main/java/" + getPackageName()
@@ -756,12 +732,14 @@ func getJavaSourcePath() string {
 		// fallback to base groupId path
 		return base
 	}
+
 	// Check if there's exactly one subfolder (typical in Spring apps)
 	for _, entry := range entries {
 		if entry.IsDir() {
 			return base + "/" + entry.Name()
 		}
 	}
+
 	return base
 }
 
@@ -804,6 +782,7 @@ func generateFile(path string, filename string, content []byte) {
 		utils.PrintError(fmt.Sprintf("Erreur lors de l'écriture du fichier: %v", err))
 		os.Exit(1)
 	}
+
 	utils.PrintSuccess(fmt.Sprintf("Fichier %s généré avec succès", filename))
 
 	// Afficher des informations supplémentaires
@@ -814,8 +793,6 @@ func generateFile(path string, filename string, content []byte) {
 func AskYesNo() bool {
 	var answer string
 	utils.PrintPrompt("Voulez-vous continuer ? (y/n): ")
-	fmt.Scanln(&answer)
+	_, _ = fmt.Scanln(&answer)
 	return answer == "y"
 }
-
-//======================== END UTILS =========================================================
