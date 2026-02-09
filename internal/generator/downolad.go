@@ -12,7 +12,7 @@ import (
 
 func DownloadSpringProject(params map[string]string, dest string) error {
 	if _, ok := params["bootVersion"]; !ok {
-		params["bootVersion"] = "3.4.0"
+		params["bootVersion"] = "4.0.2"
 	}
 	baseURL := "https://start.spring.io/starter.zip"
 	req, err := http.NewRequest("GET", baseURL, nil)
@@ -90,7 +90,7 @@ func unzip(src, dest string) error {
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(fpath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(fpath), 0o755); err != nil {
 			return err
 		}
 
@@ -115,4 +115,3 @@ func unzip(src, dest string) error {
 
 	return nil
 }
-
