@@ -1,17 +1,14 @@
 name: CI
-
 on:
   push:
     branches: [dev, staging, main]
   pull_request:
-    branches: [main]
+    branches: [staging, main]
 
 jobs:
   lint:
     name: Lint Go code
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main' || github.base_ref == 'main'
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -19,7 +16,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: "1.21"
 
       - name: Go Format
         run: go fmt ./...
@@ -33,11 +30,10 @@ jobs:
           version: latest
 
   test:
-    name: Tests Go (uniquement staging/main)
+    name: Tests Go
     needs: lint
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main' || github.base_ref == 'main'
-
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main' || github.base_ref == 'staging' || github.base_ref == 'main'
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,7 +41,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: "1.21"
 
       - name: Go Test
         run: go test -v ./...
